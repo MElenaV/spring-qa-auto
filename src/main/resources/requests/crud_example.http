@@ -1,0 +1,32 @@
+### Get one user
+GET http://localhost:8080/user/1
+
+### Save user
+POST http://localhost:8080/user
+Content-Type: application/json
+
+{
+  "firstName": "Sam",
+  "secondName": "Barber",
+  "age": 22
+}
+
+### Update user
+PUT http://localhost:8080/user/3
+Content-Type: application/json
+
+{
+  "firstName": "Karl",
+  "secondName": "Black",
+  "age": 50
+}
+
+### Get all users
+GET http://localhost:8080/user/all
+
+### Delete user
+DELETE http://localhost:8080/user/1
+
+
+
+
