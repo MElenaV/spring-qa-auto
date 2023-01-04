@@ -26,7 +26,3 @@ GET http://localhost:8080/user/all
 
 ### Delete user
 DELETE http://localhost:8080/user/1
-
-
-
-
