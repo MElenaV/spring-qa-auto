@@ -6,7 +6,6 @@ import com.spring.qa.auto.lesson4.entity.UserEntity;
 import com.spring.qa.auto.lesson4.repository.UserRepository;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,17 +103,67 @@ public class UserIntegrationTest {
             s.assertThat(userEntity.getSecondName()).isEqualTo(user.getSecondName());
             s.assertThat(userEntity.getAge()).isEqualTo(user.getAge());
         });
+
     }
 
     @Test
-    @Disabled
-    void updateUserTest() {
-        //TODO Implement update user test
+    void updateUserTest() throws Exception {
+
+        UserEntity userEntity = new UserEntity();
+        userEntity.setFirstName("First Name");
+        userEntity.setSecondName("Second Name");
+        userEntity.setAge(50);
+
+        userRepository.saveAndFlush(userEntity);
+
+        UserEntity userEntityBeforeUpdate = userRepository.findAll().stream()
+                .findFirst()
+                .orElseThrow();
+
+        UserEntity userEntityNew = new UserEntity();
+        userEntityNew.setId(userEntityBeforeUpdate.getId());
+        userEntityNew.setAge(30);
+        userEntityNew.setFirstName("First Name2");
+        userEntityNew.setSecondName("Second Name2");
+
+        HttpRequest httpRequest2 = HttpRequest.newBuilder()
+                .uri(URI.create(getRootUrl() + "/user-rest"))
+                .header(HttpHeaders.CONTENT_TYPE, "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(userEntityNew)))
+                .build();
+
+        HttpResponse<String> response2 = httpClient.send(httpRequest2, HttpResponse.BodyHandlers.ofString());
+        Assertions.assertThat(response2.statusCode()).isEqualTo(SC_OK);
+
+        UserEntity userEntityAfterUpdate = userRepository.findAll().stream()
+                .findFirst()
+                .orElseThrow();
+
+        SoftAssertions.assertSoftly(s -> {
+            s.assertThat(userEntityAfterUpdate.getFirstName()).isEqualTo(userEntityNew.getFirstName());
+            s.assertThat(userEntityAfterUpdate.getSecondName()).isEqualTo(userEntityNew.getSecondName());
+            s.assertThat(userEntityAfterUpdate.getAge()).isEqualTo(userEntityNew.getAge());
+        });
     }
 
     @Test
-    @Disabled
-    void deleteUserTest() {
-        //TODO Implement delete user test
+    void deleteUserTest() throws Exception {
+
+        UserEntity userEntity = new UserEntity();
+        userEntity.setFirstName("First Name");
+        userEntity.setSecondName("Second Name");
+        userEntity.setAge(50);
+        UserEntity entity = userRepository.saveAndFlush(userEntity);
+
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(getRootUrl() + "/user-rest/" + entity.getId()))
+                .header(HttpHeaders.CONTENT_TYPE, "application/json")
+                .DELETE()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+        Assertions.assertThat(response.statusCode()).isEqualTo(SC_OK);
+        Assertions.assertThat(userRepository.findAll().stream().findFirst().isEmpty());
     }
 }
