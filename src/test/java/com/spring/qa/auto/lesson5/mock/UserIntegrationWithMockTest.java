@@ -55,7 +55,6 @@ public class UserIntegrationWithMockTest {
         user.setFirstName("First Name");
         user.setSecondName("Second Name");
         Mockito.when(userService.getById(Mockito.anyInt())).thenReturn(user);
-
     }
 
     @Test
@@ -80,5 +79,19 @@ public class UserIntegrationWithMockTest {
             s.assertThat(user.getSecondName()).isEqualTo(userResponse.getSecondName());
             s.assertThat(user.getAge()).isEqualTo(userResponse.getAge());
         });
+    }
+
+    @Test
+    void deleteUserTest() throws Exception {
+
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(getRootUrl() + "/user-rest/" + new Random().nextInt(5)))
+                .header(HttpHeaders.CONTENT_TYPE, "application/json")
+                .DELETE()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+        Assertions.assertThat(response.statusCode()).isEqualTo(SC_OK);
     }
 }

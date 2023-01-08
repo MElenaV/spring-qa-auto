@@ -3,7 +3,6 @@ package com.spring.qa.auto.lesson5.petstore.user;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +76,7 @@ public class PetStoreUserServiceTest {
                 .userStatus(5)
                 .build();
 
+
         //post user
         requestSpecification
                 .body(userDto)
@@ -94,6 +94,7 @@ public class PetStoreUserServiceTest {
                 .contentType(ContentType.JSON)
                 .statusCode(HttpStatus.OK.value());
 
+
         //get user again and assert that response code is 404
         requestSpecification
                 .get(EndPoints.USER.getUrl() + "/" + userDto.getUsername())
@@ -105,19 +106,57 @@ public class PetStoreUserServiceTest {
     }
 
     @Test
-    @Disabled
     void updateUserTest() {
-        //TODO Implement update user test
-         /* .body(UserDTO)
+
+        //pre-condition - create user
+        PetStoreUserDto userDto = PetStoreUserDto.builder()
+                .firstName("firstName")
+                .id(201)
+                .lastName("lastName")
+                .username("userCreate")
+                .email("email@email.com")
+                .password("qwerty")
+                .phone("phone")
+                .userStatus(5)
+                .build();
+        //post user
+        requestSpecification
+                .body(userDto)
                 .post(EndPoints.USER.getUrl())
                 .then()
-                .statusCode(HttpStatus.OK.value())
-                .assertThat(userFromService)
-                .body(userDto)
-                .exctract()
-                .response()
-                .body()
-                .path("id");*/
+                .log().all()
+                .contentType(ContentType.JSON)
+                .statusCode(HttpStatus.OK.value());
 
+        PetStoreUserDto userDtoNew = PetStoreUserDto.builder()
+                .firstName("firstName2")
+                .id(userDto.getId())
+                .lastName("lastName2")
+                .username("userUpdate")
+                .email("email2@email.com")
+                .password("qwerty2")
+                .phone("phone2")
+                .userStatus(5)
+                .build();
+
+        //put user
+        requestSpecification
+                .body(userDtoNew)
+                .put(EndPoints.USER.getUrl() + "/" + userDtoNew.getUsername())
+                .then()
+                .log().all()
+                .statusCode(HttpStatus.OK.value());
+
+        PetStoreUserDto userFromService = requestSpecification
+                .get(EndPoints.USER.getUrl() + "/" + userDtoNew.getUsername())
+                .then()
+                .log().all()
+                .contentType(ContentType.JSON)
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .as(PetStoreUserDto.class);
+
+        //assert response
+        Assertions.assertThat(userFromService).isEqualTo(userDtoNew);
     }
 }
