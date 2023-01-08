@@ -5,7 +5,6 @@ import com.spring.qa.auto.lesson4.entity.UserEntity;
 import com.spring.qa.auto.lesson4.repository.UserRepository;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -107,8 +106,23 @@ public class UserRepositoryTest {
     }
 
     @Test
-    @Disabled
     void getUserByFirstNameAndSecondNameTest() {
 
+        UserEntity userEntity = new UserEntity();
+        userEntity.setAge(25);
+        userEntity.setFirstName("Alex");
+        userEntity.setSecondName("Brown");
+
+        testEntityManager.persistAndFlush(userEntity);
+
+        Optional<UserEntity> entity = userRepository.findByFirstNameAndSecondName("Alex", "Brown");
+
+        Assertions.assertThat(entity.isPresent()).isTrue();
+
+        SoftAssertions.assertSoftly(s -> {
+            s.assertThat(entity.get().getFirstName()).isEqualTo("Alex");
+            s.assertThat(entity.get().getSecondName()).isEqualTo("Brown");
+            s.assertThat(entity.get().getAge()).isEqualTo(25);
+        });
     }
 }
